@@ -1,12 +1,11 @@
 import os
-from .models import Contest
 
 
-def get_pub_path(instance: Contest, filename: str) -> str:
+def get_pub_path(instance, filename: str) -> str:
     return get_path(instance.pk, os.path.splitext(filename)[1], 'public')
 
 
-def get_priv_path(instance: Contest, filename: str) -> str:
+def get_priv_path(instance, filename: str) -> str:
     return get_path(instance.pk, os.path.splitext(filename)[1], 'private')
 
 
