@@ -3,4 +3,4 @@ python-dotenv~=0.17.0
 djangorestframework~=3.12.4
 
 geopandas~=0.9.0
-pytest~=6.2.3
+pytest-django~=4.1.0
