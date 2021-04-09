@@ -11,6 +11,7 @@ class Contest(models.Model):
     # TODO: renaming files & manage access (only for admins)
     public_reference_file = models.FileField(blank=True, null=True, upload_to=get_pub_path)
     private_reference_file = models.FileField(blank=True, null=True, upload_to=get_priv_path)
+    column_to_compare = models.CharField(max_length=50, null=True)
 
 
 class Team(models.Model):
