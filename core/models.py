@@ -56,10 +56,9 @@ User.save = send_password_on_save
 
 @receiver(post_save, sender=Attempt)
 def calculate_score_after_save(sender, instance: Attempt, **kwargs):
-    print(instance.status)
     if instance.status == 'On checking':
         contest = instance.team.contest
-        if contest.public_reference_file is not None:
+        if contest.public_reference_file.name != '':
             try:
                 instance.public_score = calc_score(
                     contest.column_to_compare, instance.file.path,
@@ -68,7 +67,7 @@ def calculate_score_after_save(sender, instance: Attempt, **kwargs):
             except Exception as e:
                 instance.status = 'Error: ' + str(e)
             instance.save()
-        if contest.private_reference_file is not None and not instance.status.startswith('Error'):
+        if contest.private_reference_file.name != '' and not instance.status.startswith('Error'):
             try:
                 instance.private_score = calc_score(
                     contest.column_to_compare, instance.file.path,
@@ -76,4 +75,8 @@ def calculate_score_after_save(sender, instance: Attempt, **kwargs):
                 instance.status = 'Accepted'
             except Exception as e:
                 instance.status = 'Error: ' + str(e)
+            instance.save()
+
+        if instance.status == 'On checking':
+            instance.status = 'Accepted'
             instance.save()
