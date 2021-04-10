@@ -25,3 +25,16 @@ class Attempt(models.Model):
     file = models.FileField(upload_to=get_attempt_path)
     public_score = models.FloatField(blank=True, null=True)
     private_score = models.FloatField(blank=True, null=True)
+
+
+def send_password_on_save(instance: User):
+    if instance.password == '':
+        password = User.objects.make_random_password()
+        instance.set_password(password)
+        instance.email_user(
+            'Registration', f'Your auth credentials are:\nUsername: '
+                            f'{instance.username}\nPassword: {password}')
+    super(User, instance).save()
+
+
+User.save = send_password_on_save
