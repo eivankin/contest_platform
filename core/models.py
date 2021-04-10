@@ -27,14 +27,14 @@ class Attempt(models.Model):
     private_score = models.FloatField(blank=True, null=True)
 
 
-def send_password_on_save(instance: User):
+def send_password_on_save(instance: User, *args, **kwargs):
     if instance.password == '':
         password = User.objects.make_random_password()
         instance.set_password(password)
         instance.email_user(
             'Registration', f'Your auth credentials are:\nUsername: '
                             f'{instance.username}\nPassword: {password}')
-    super(User, instance).save()
+    super(User, instance).save(*args, **kwargs)
 
 
 User.save = send_password_on_save
