@@ -1,13 +1,39 @@
 {% extends 'base.html' %}
 {% block content %}
-    <h1>Активные соревнования</h1>
-    {% for contest in active_contests %}
-        <div class="card">
-            <div class="card-header bg-success text-white">{{ contest.name }}</div>
-            <div class="card-body">
-                <p class="card-text">{{ contest.description|safe }}</p>
-                <a href="#" class="btn btn-success">Принять участие</a>
+    {% if active_contests %}
+        <h1>Активные соревнования</h1>
+        {% for contest in active_contests %}
+            <div class="card">
+                <div class="card-header bg-success text-white">{{ contest.name }}</div>
+                <div class="card-body">
+                    <p class="card-text">{{ contest.description|safe }}</p>
+                    <a href="#" class="btn btn-success">Принять участие</a>
+                </div>
             </div>
-        </div>
-    {% endfor %}
+        {% endfor %}
+    {% endif %}
+    {% if future_contests %}
+        <h1>Планируемые соревнования</h1>
+        {% for contest in future_contests %}
+            <div class="card">
+                <div class="card-header bg-success text-white">{{ contest.name }}</div>
+                <div class="card-body">
+                    <p class="card-text">{{ contest.description|safe }}</p>
+                    <a href="#" class="btn btn-success">Принять участие</a>
+                </div>
+            </div>
+        {% endfor %}
+    {% endif %}
+    {% if archive_contests %}
+        <h1>Прошедшие соревнования</h1>
+        {% for contest in archive_contests %}
+            <div class="card">
+                <div class="card-header bg-success text-white">{{ contest.name }}</div>
+                <div class="card-body">
+                    <p class="card-text">{{ contest.description|safe }}</p>
+                    <a href="#" class="btn btn-success">Принять участие</a>
+                </div>
+            </div>
+        {% endfor %}
+    {% endif %}
 {% endblock %}
