@@ -1,4 +1,5 @@
 from django.http import HttpRequest
+from django.db import models
 from django.utils import timezone
 from django.db.models.query import QuerySet
 from django.contrib.auth.decorators import login_required
@@ -70,7 +71,7 @@ def attempts(request: HttpRequest, contest_id: int = None) -> Response:
         try:
             contest = Contest.objects.get(pk=contest_id)
         except Exception:
-            return Response(status=status.HTTP_404_NOT_FOUND)
+            return Response({'message': 'no such contest'}, status=status.HTTP_404_NOT_FOUND)
 
         if contest.starts_at > timezone.now() or contest.ends_at < timezone.now():
             return Response({'message': 'you can\'t create attempt in inactive contest'},
@@ -89,22 +90,37 @@ def attempts(request: HttpRequest, contest_id: int = None) -> Response:
 @api_view(['GET'])
 def teams(request: HttpRequest, contest_id: int = None) -> Response:
     """
-    Returns list of user teams if contest_id is None,
-    else returns all teams registered on contest
+    Returns list of teams registered on contest if its id is given,
+    else returns user teams or all teams depends on if user is authenticated.
+    If contest_id is given, supports GET parameter "order_by",
+    possible values: "public_score" and "private_score".
     """
     if contest_id is None:
-        teams_query = request.user.team_set.all()
+        if request.user.is_authenticated:
+            teams_query = request.user.team_set.all()
+        else:
+            teams_query = Team.objects.all()
+        contest = None
     else:
-        teams_query = Team.objects.filter(contest_id=contest_id)
+        contest = Contest.objects.filter(pk=contest_id).first()
+        if contest is None:
+            return Response({'message': 'no such contest'},
+                            status=status.HTTP_404_NOT_FOUND)
+
+        teams_query = Team.objects.filter(contest=contest)
+    order = request.GET.get('order_by')
+    if order == 'private_score':
+        if contest_id is None or not contest.ends_at < timezone.now():
+            return Response(
+                {'message': 'private leaderboard is closed while contest isn\'t ended'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        score = models.Max('attempt__private_score')
+    else:
+        score = models.Max('attempt__public_score')
+    teams_query = teams_query.annotate(score=score)
+    if str(order).endswith('score'):
+        teams_query = teams_query.order_by('-score')
+
     serialized = TeamSerializer(teams_query, many=True)
     return Response(serialized.data)
-
-
-@api_view(['GET'])
-def leaderboard(request: HttpRequest, contest_id: int) -> Response:
-    """
-    Returns list of teams with their best score.
-    If contest is finished, returns public and private leaderboard,
-    otherwise only public leaderboard will be returned.
-    """
-    pass

@@ -9,9 +9,11 @@ class ContestSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class TeamSerializer(serializers.HyperlinkedModelSerializer):
+    score = serializers.FloatField()
+
     class Meta:
         model = Team
-        fields = ['id', 'name', 'contest_id']
+        fields = ['id', 'name', 'contest_id', 'score']
 
 
 class ActiveContestAttemptSerializer(serializers.HyperlinkedModelSerializer):
