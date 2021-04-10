@@ -1,6 +1,9 @@
 from django.db import models
+from django.dispatch import receiver
 from django.contrib.auth.models import User
-from .utilities import get_pub_path, get_priv_path, get_attempt_path
+from django.db.models.signals import post_save
+from .utilities import get_attempt_path
+from checker.main import calc_score
 
 
 class Contest(models.Model):
@@ -8,9 +11,13 @@ class Contest(models.Model):
     description = models.TextField()
     starts_at = models.DateTimeField()
     ends_at = models.DateTimeField()
-    public_reference_file = models.FileField(blank=True, null=True, upload_to=get_pub_path)
-    private_reference_file = models.FileField(blank=True, null=True, upload_to=get_priv_path)
+    region_of_interest = models.FileField(upload_to='contests/%Y/%m/%d/', null=True)
+    public_reference_file = models.FileField(blank=True, null=True, upload_to='contests/%Y/%m/%d/')
+    private_reference_file = models.FileField(blank=True, null=True, upload_to='contests/%Y/%m/%d/')
     column_to_compare = models.CharField(max_length=50, null=True)
+
+    def __str__(self):
+        return self.name
 
 
 class Team(models.Model):
@@ -18,13 +25,20 @@ class Team(models.Model):
     contest = models.ForeignKey(Contest, on_delete=models.CASCADE)
     users = models.ManyToManyField(User)
 
+    def __str__(self):
+        return self.name
+
 
 class Attempt(models.Model):
     team = models.ForeignKey(Team, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=100, default='On checking', editable=False)
     file = models.FileField(upload_to=get_attempt_path)
-    public_score = models.FloatField(blank=True, null=True)
-    private_score = models.FloatField(blank=True, null=True)
+    public_score = models.FloatField(null=True, editable=False)
+    private_score = models.FloatField(null=True, editable=False)
+
+    def __str__(self):
+        return f'{self.team} {self.created_at}'
 
 
 def send_password_on_save(instance: User, *args, **kwargs):
@@ -38,3 +52,28 @@ def send_password_on_save(instance: User, *args, **kwargs):
 
 
 User.save = send_password_on_save
+
+
+@receiver(post_save, sender=Attempt)
+def calculate_score_after_save(sender, instance: Attempt, **kwargs):
+    print(instance.status)
+    if instance.status == 'On checking':
+        contest = instance.team.contest
+        if contest.public_reference_file is not None:
+            try:
+                instance.public_score = calc_score(
+                    contest.column_to_compare, instance.file.path,
+                    contest.public_reference_file.path, contest.region_of_interest.path)
+                instance.status = 'Accepted'
+            except Exception as e:
+                instance.status = 'Error: ' + str(e)
+            instance.save()
+        if contest.private_reference_file is not None and not instance.status.startswith('Error'):
+            try:
+                instance.private_score = calc_score(
+                    contest.column_to_compare, instance.file.path,
+                    contest.public_reference_file.path, contest.region_of_interest.path)
+                instance.status = 'Accepted'
+            except Exception as e:
+                instance.status = 'Error: ' + str(e)
+            instance.save()

@@ -24,6 +24,7 @@ def future_contests():
 
 @csrf_exempt
 def contests(request: HttpRequest, contests_type: str = 'all') -> JsonResponse:
+    """Main contest view, returns json dictionary with requested contests or raises Http404"""
     contests_types = {'all': lambda: Contest.objects.all(),
                       'active': active_contests,
                       'archive': archive_contests,
@@ -36,3 +37,17 @@ def contests(request: HttpRequest, contests_type: str = 'all') -> JsonResponse:
         contests_query = contests_query.filter(team__in=request.user.team_set.all())
     serializer = ContestSerializer(contests_query, many=True)
     return JsonResponse(serializer.data, safe=False)
+
+
+@csrf_exempt
+def attempts(request: HttpRequest, contest_id: int = None) -> JsonResponse:
+    attempts_query = Attempt.objects.filter(team__in=request.user.team_set.all())
+    if contest_id is not None:
+        attempts_query = attempts_query.filter(team__contest_id=contest_id)
+    serializer = AttemptSerializer(attempts_query, many=True, context={'request': request})
+    return JsonResponse(serializer.data, safe=False)
+
+
+@csrf_exempt
+def teams(request: HttpRequest) -> JsonResponse:
+    pass
