@@ -1,7 +1,7 @@
 from django.db import models
 from django.dispatch import receiver
 from django.contrib.auth.models import User
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, post_delete
 from .utilities import get_attempt_path
 from checker.main import calc_score
 
@@ -11,9 +11,11 @@ class Contest(models.Model):
     description = models.TextField()
     starts_at = models.DateTimeField()
     ends_at = models.DateTimeField()
-    region_of_interest = models.FileField(upload_to='contests/%Y/%m/%d/', null=True)
-    public_reference_file = models.FileField(blank=True, null=True, upload_to='contests/%Y/%m/%d/')
-    private_reference_file = models.FileField(blank=True, null=True, upload_to='contests/%Y/%m/%d/')
+    region_of_interest = models.FileField(upload_to='files/contests/%Y/%m/%d/', null=True)
+    public_reference_file = models.FileField(blank=True, null=True,
+                                             upload_to='files/contests/%Y/%m/%d/')
+    private_reference_file = models.FileField(blank=True, null=True,
+                                              upload_to='files/contests/%Y/%m/%d/')
     column_to_compare = models.CharField(max_length=50, null=True)
 
     def __str__(self):
@@ -80,3 +82,15 @@ def calculate_score_after_save(sender, instance: Attempt, **kwargs):
         if instance.status == 'On checking':
             instance.status = 'Accepted'
             instance.save()
+
+
+@receiver(post_delete, sender=Attempt)
+def delete_attempt_file(sender, instance: Attempt, **kwargs):
+    instance.file.delete(False)
+
+
+@receiver(post_delete, sender=Contest)
+def delete_contest_files(sender, instance: Contest, **kwargs):
+    instance.public_reference_file.delete(False)
+    instance.private_reference_file.delete(False)
+    instance.region_of_interest.delete(False)

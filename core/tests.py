@@ -103,3 +103,7 @@ class AttemptViewsTests(TestCase):
         self.assertEqual(len(attempts), 1)
         self.assertEqual(attempts[0]['status'], 'Accepted')
         self.assertEqual(attempts[0]['public_score'], 1)
+
+    def tearDown(self) -> None:
+        self.user.delete()
+        self.my_contest.delete()

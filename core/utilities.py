@@ -2,4 +2,5 @@ import os
 
 
 def get_attempt_path(instance, filename: str):
-    return f'attempts/{instance.team.pk}/{instance.created_at}{os.path.splitext(filename)[1]}'
+    return f'files/attempts/{instance.team.pk}/' \
+           f'{int(instance.created_at.timestamp())}{os.path.splitext(filename)[1]}'
