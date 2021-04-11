@@ -54,3 +54,20 @@ def contest(request: HttpRequest, contest_id: int) -> HttpResponse:
 
 def teams(request: HttpRequest) -> HttpResponse:
     pass
+
+
+def attempts(request: HttpRequest, contest_id: int) -> HttpResponse:
+    c = prepare_client(request.user)
+    permissions = c.get(reverse('core:permissions', args=[contest_id])).json()
+    if 'message' in permissions:
+        messages.error(request, 'Error: ' + permissions['message'])
+        return redirect(reverse('front:contests'))
+    if not permissions['get_attempts']:
+        messages.error(request, 'You can\'t view attempts of this contest')
+        return redirect(reverse('front:contest', args=[contest_id]))
+
+    attempts_list = c.get(reverse('core:attempts', args=[contest_id])).json()
+    return render(request, 'attempts.html', {
+        'attempts': attempts_list, 'title': 'Список попыток',
+        'team_name': c.get(reverse('core:team',
+                                   args=[attempts_list[0]['team_id']])).json()['name']})

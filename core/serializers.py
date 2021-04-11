@@ -12,7 +12,7 @@ class ContestSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class TeamSerializer(serializers.HyperlinkedModelSerializer):
-    score = serializers.FloatField()
+    score = serializers.FloatField(required=False)
 
     class Meta:
         model = Team
@@ -20,12 +20,16 @@ class TeamSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class ActiveContestAttemptSerializer(serializers.HyperlinkedModelSerializer):
+    created_at = serializers.DateTimeField(format="%d.%m.%Y %H:%M:%S")
+
     class Meta:
         model = Attempt
         fields = ['team_id', 'status', 'created_at', 'public_score']
 
 
 class ArchiveContestAttemptSerializer(serializers.HyperlinkedModelSerializer):
+    created_at = serializers.DateTimeField(format="%d.%m.%Y %H:%M:%S")
+
     class Meta:
         model = Attempt
         fields = ['team_id', 'status', 'created_at', 'public_score', 'private_score']
