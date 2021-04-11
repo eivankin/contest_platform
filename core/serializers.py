@@ -1,5 +1,6 @@
 from .models import Contest, Team, Attempt
 from rest_framework import serializers
+from django.contrib.auth.models import User
 
 
 class ContestSerializer(serializers.HyperlinkedModelSerializer):
@@ -46,3 +47,9 @@ class NewAttemptSerializer(serializers.HyperlinkedModelSerializer):
     def create(self, validated_data):
         team = Team.objects.get(pk=validated_data.pop('team_id'))
         return Attempt(**validated_data, team=team)
+
+
+class UserSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = User
+        fields = ['email', 'username']

@@ -40,16 +40,6 @@ def contests(request: HttpRequest) -> HttpResponse:
 
 def contest(request: HttpRequest, contest_id: int) -> HttpResponse:
     c = prepare_client(request.user)
-    if request.method == 'POST':
-        file = request.FILES.get('file')
-        print(request.FILES, request.POST)
-        if file is not None:
-            response = c.post(reverse('core:attempts', args=[contest_id]),
-                              {'file': file})
-            if response.status_code == 201:
-                messages.success(request, response.json()['message'])
-            else:
-                messages.error(request, 'Error: ' + response.json()['message'])
     contest_data = c.get(reverse('core:contest', args=[contest_id])).json()
     if 'message' in contest_data:
         messages.error(request, 'Error: ' + contest_data['message'])
@@ -85,6 +75,16 @@ def teams(request: HttpRequest, contest_id: int = None) -> HttpResponse:
 @login_required
 def attempts(request: HttpRequest, contest_id: int) -> HttpResponse:
     c = prepare_client(request.user)
+    if request.method == 'POST':
+        file = request.FILES.get('file')
+        print(request.FILES, request.POST)
+        if file is not None:
+            response = c.post(reverse('core:attempts', args=[contest_id]),
+                              {'file': file})
+            if response.status_code == 201:
+                messages.success(request, response.json()['message'])
+            else:
+                messages.error(request, 'Error: ' + response.json()['message'])
     permissions = c.get(reverse('core:permissions', args=[contest_id])).json()
     if 'message' in permissions:
         messages.error(request, 'Error: ' + permissions['message'])
@@ -100,3 +100,18 @@ def attempts(request: HttpRequest, contest_id: int) -> HttpResponse:
                                    args=[attempts_list[0]['team_id']])).json()['name'],
         'form': AttemptForm(), 'contest_id': contest_id
     })
+
+
+def register(request: HttpRequest, contest_id: int = None) -> HttpResponse:
+    c = prepare_client(request.user)
+    if contest_id is None:
+        response = c.post(reverse('core:register_user'), request.POST)
+        if response.status_code == 201:
+            messages.success(request, response.json()['message'])
+        else:
+            messages.error(request, 'Error: ' + response.json()['message'])
+        return redirect(reverse('front:contests'))
+
+
+def join_team(request: HttpRequest, team_id: int):
+    pass

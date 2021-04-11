@@ -44,7 +44,7 @@
     </div>
 </nav>
 <main class="container-fluid" style="margin-top: 5%">
-    <form action="/register" method="post">
+    <form action="{% url 'front:register_user' %}" method="post">
         <div class="modal fade" id="registerModal" tabindex="-1"
              aria-labelledby="registerModalLabel"
              aria-hidden="true">
@@ -56,6 +56,7 @@
                                 aria-label="Закрыть"></button>
                     </div>
                     <div class="modal-body">
+                        {% csrf_token %}
                         {% bootstrap_form request.login_form %}
                     </div>
                     <div class="modal-footer">

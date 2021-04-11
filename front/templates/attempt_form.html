@@ -2,7 +2,7 @@
 <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#formModal">
     Отправить решение
 </button>
-<form enctype="multipart/form-data" method="post">
+<form enctype="multipart/form-data" action="{% url 'front:attempts' contest_id %}" method="post">
     <div class="modal fade" id="formModal" tabindex="-1" aria-labelledby="formModalLabel"
          aria-hidden="true">
         <div class="modal-dialog">

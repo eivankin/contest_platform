@@ -8,7 +8,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from .models import Team, Contest, Attempt
 from .serializers import TeamSerializer, ContestSerializer, \
-    ActiveContestAttemptSerializer, ArchiveContestAttemptSerializer, NewAttemptSerializer
+    ActiveContestAttemptSerializer, ArchiveContestAttemptSerializer, \
+    NewAttemptSerializer, UserSerializer
 
 
 def active_contests() -> QuerySet:
@@ -88,7 +89,8 @@ def attempts(request: HttpRequest, contest_id: int = None) -> Response:
         if serialized.is_valid():
             instance = serialized.save()
             instance.save()
-            return Response({'message': 'saved successfully'}, status=status.HTTP_201_CREATED)
+            return Response({'message': 'Attempt created successfully'},
+                            status=status.HTTP_201_CREATED)
         return Response(serialized.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -153,3 +155,26 @@ def get_permissions(request: HttpRequest, contest_id: int) -> Response:
         else:
             permissions['register'] = True
     return Response(permissions)
+
+
+@api_view(['POST'])
+def register_user(request: HttpRequest) -> Response:
+    serialized = UserSerializer(data=request.data)
+    if serialized.is_valid():
+        serialized.save()
+        return Response(
+            {'message': 'User successfully created, auth credentials will be sent on given email'},
+            status=status.HTTP_201_CREATED)
+    return Response(serialized.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@login_required
+@api_view(['POST'])
+def register_team(request: HttpRequest, contest_id: int) -> Response:
+    pass
+
+
+@login_required
+@api_view(['PATCH'])
+def join_team(request: HttpRequest, team_id: int) -> Response:
+    pass
