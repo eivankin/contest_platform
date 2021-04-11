@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block content %}
+    <h1 class="text-center">{{ contest.name }}</h1>
+    <h5 class="text-muted text-center">
+        Время проведения: {{ contest.starts_at }} - {{ contest.ends_at }}
+    </h5>
+    <p class="text-center">
+        {% if permissions.submit %}
+            <a href="submit" class="btn btn-success">Отправить решение</a>
+        {% endif %}
+        {% if permissions.get_attempts %}
+            <a href="attempts" class="btn btn-success">Мои попытки</a>
+        {% endif %}
+        {% if permissions.register %}
+            <a href="register" class="btn btn-success">Зарегистрироваться</a>
+        {% endif %}
+    </p>
+    <p class="text-center">{{ contest.description|safe }}</p>
+    <h2 class="text-center">Участники</h2>
+    <table class="table table-striped table-hover">
+        <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Название команды</th>
+                <th scope="col">Счёт</th>
+            </tr>
+        </thead>
+        {% for team in teams %}
+            <tr>
+                <th scope="row">{{ forloop.counter }}</th>
+                <td>{{ team.name }}</td>
+                <td>{{ team.score|default:"Нет попыток" }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+{% endblock %}
