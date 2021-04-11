@@ -55,7 +55,9 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal"
                                 aria-label="Закрыть"></button>
                     </div>
-                    <div class="modal-body">здесь могла быть форма регистрации</div>
+                    <div class="modal-body">
+                        {% bootstrap_form request.login_form %}
+                    </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                             Закрыть
