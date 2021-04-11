@@ -3,6 +3,7 @@ from django.http import HttpRequest, HttpResponse
 from django.urls import reverse
 from django.contrib import messages
 from .utilities import process_contest_data, prepare_client
+from .forms import AttemptForm
 
 
 def contests(request: HttpRequest) -> HttpResponse:
@@ -38,6 +39,16 @@ def contests(request: HttpRequest) -> HttpResponse:
 
 def contest(request: HttpRequest, contest_id: int) -> HttpResponse:
     c = prepare_client(request.user)
+    if request.method == 'POST':
+        file = request.FILES.get('file')
+        print(request.FILES, request.POST)
+        if file is not None:
+            response = c.post(reverse('core:attempts', args=[contest_id]),
+                              {'file': file})
+            if response.status_code == 201:
+                messages.success(request, response.json()['message'])
+            else:
+                messages.error(request, 'Error: ' + response.json()['message'])
     contest_data = c.get(reverse('core:contest', args=[contest_id])).json()
     if 'message' in contest_data:
         messages.error(request, 'Error: ' + contest_data['message'])
@@ -49,7 +60,9 @@ def contest(request: HttpRequest, contest_id: int) -> HttpResponse:
     ).json()
     return render(request, 'contest.html', {
         'contest': contest_data, 'title': contest_data['name'],
-        'teams': leaderboard, 'permissions': permissions})
+        'teams': leaderboard, 'permissions': permissions,
+        'form': AttemptForm(), 'contest_id': contest_id
+    })
 
 
 def teams(request: HttpRequest) -> HttpResponse:
@@ -70,4 +83,6 @@ def attempts(request: HttpRequest, contest_id: int) -> HttpResponse:
     return render(request, 'attempts.html', {
         'attempts': attempts_list, 'title': 'Список попыток',
         'team_name': c.get(reverse('core:team',
-                                   args=[attempts_list[0]['team_id']])).json()['name']})
+                                   args=[attempts_list[0]['team_id']])).json()['name'],
+        'form': AttemptForm(), 'contest_id': contest_id
+    })
