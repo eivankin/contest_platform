@@ -1,6 +1,7 @@
 import re
 import os
 from functools import lru_cache
+from django.test import Client
 from requests import get
 
 API_KEY = os.getenv('GEOCODER_API_KEY')
@@ -25,3 +26,10 @@ def process_contest_data(contest_list: list) -> None:
     for contest in contest_list:
         contest['description'] = re.sub(
             r'@geocode\((.*)\)', replace_geocode_tag, contest['description'])
+
+
+def prepare_client(user) -> Client:
+    c = Client()
+    if user.is_authenticated:
+        c.force_login(user)
+    return c

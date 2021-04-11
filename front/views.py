@@ -1,14 +1,12 @@
 from django.shortcuts import render, redirect
 from django.http import HttpRequest, HttpResponse
 from django.urls import reverse
-from django.test import Client
 from django.contrib import messages
-from .utilities import process_contest_data
+from .utilities import process_contest_data, prepare_client
 
 
 def contests(request: HttpRequest) -> HttpResponse:
-    c = Client()
-    c.force_login(request.user)
+    c = prepare_client(request.user)
     my_contests = None
     if request.user.is_authenticated:
         my_contests = c.get(
@@ -39,8 +37,7 @@ def contests(request: HttpRequest) -> HttpResponse:
 
 
 def contest(request: HttpRequest, contest_id: int) -> HttpResponse:
-    c = Client()
-    c.force_login(request.user)
+    c = prepare_client(request.user)
     contest_data = c.get(reverse('core:contest', args=[contest_id])).json()
     if 'message' in contest_data:
         messages.error(request, 'Error: ' + contest_data['message'])
