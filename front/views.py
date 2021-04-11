@@ -115,5 +115,9 @@ def register(request: HttpRequest, contest_id: int = None) -> HttpResponse:
         return redirect(reverse('front:contests'))
 
 
+@login_required
 def join_team(request: HttpRequest, team_id: int):
-    pass
+    c = prepare_client(request.user)
+    response = c.patch(reverse('core:team', args=[team_id]))
+    repr_result(response, request, correct_status_code=200)
+    return redirect(reverse('front:teams'))

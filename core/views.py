@@ -10,6 +10,7 @@ from .models import Team, Contest, Attempt
 from .serializers import TeamSerializer, ContestSerializer, \
     ActiveContestAttemptSerializer, ArchiveContestAttemptSerializer, \
     NewAttemptSerializer, UserSerializer
+from contest_platform.settings import MAX_TEAM_MEMBERS
 
 
 def active_contests() -> QuerySet:
@@ -94,7 +95,7 @@ def attempts(request: HttpRequest, contest_id: int = None) -> Response:
         return Response(serialized.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@api_view(['GET', 'POST'])
+@api_view(['GET', 'POST', 'PATCH'])
 def teams(request: HttpRequest, contest_id: int = None, team_id: int = None) -> Response:
     """
     Returns list of teams registered on contest if its id is given,
@@ -116,6 +117,23 @@ def teams(request: HttpRequest, contest_id: int = None, team_id: int = None) -> 
             return Response({'message': 'Team successfully created'},
                             status=status.HTTP_201_CREATED)
         return Response(serialized.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    if request.method == 'PATCH':
+        if not request.user.is_authenticated:
+            return Response({'message': 'you must be authenticated to join teams'},
+                            status=status.HTTP_403_FORBIDDEN)
+        team = Team.objects.filter(pk=team_id).first()
+        if team is None:
+            return Response({'message': 'no such team'}, status=status.HTTP_404_NOT_FOUND)
+        if len(team.users.all()) == MAX_TEAM_MEMBERS:
+            return Response({'message': 'team has maximum number of members'},
+                            status=status.HTTP_403_FORBIDDEN)
+        if request.user.team_set.filter(contest_id=team.contest_id).first() is not None:
+            return Response({'message': 'you have already registered on this contest'},
+                            status=status.HTTP_403_FORBIDDEN)
+        team.users.add(request.user)
+        team.save()
+        return Response({'message': 'Successfully joined the team'})
 
     if team_id is not None:
         team = Team.objects.filter(pk=team_id).first()
@@ -181,9 +199,3 @@ def register_user(request: HttpRequest) -> Response:
             {'message': 'User successfully created, auth credentials will be sent on given email'},
             status=status.HTTP_201_CREATED)
     return Response(serialized.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-@login_required
-@api_view(['PATCH'])
-def join_team(request: HttpRequest, team_id: int) -> Response:
-    pass

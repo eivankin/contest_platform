@@ -41,8 +41,8 @@ def repr_errors(errors: dict) -> str:
                                   for key, value in errors.items()])
 
 
-def repr_result(response, request) -> None:
-    if response.status_code == 201:
+def repr_result(response, request, correct_status_code=201) -> None:
+    if response.status_code == correct_status_code:
         messages.success(request, response.json()['message'])
     else:
         messages.error(request, repr_errors(response.json()))
