@@ -8,7 +8,7 @@ urlpatterns = [
     path('attempts/', views.attempts, name='all_attempts'),
     path('attempts/<int:contest_id>', views.attempts, name='attempts'),
     path('teams/', views.teams, name='all_teams'),
-    # path('teams/<int:team_id>', views.teams, name='team'),
+    path('teams/<int:team_id>', views.teams, name='team'),
     path('teams/contest-<int:contest_id>', views.teams, name='teams'),
     path('get_permissions/<int:contest_id>', views.get_permissions, name='permissions')
 ]

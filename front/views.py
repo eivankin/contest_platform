@@ -70,14 +70,15 @@ def teams(request: HttpRequest, contest_id: int = None) -> HttpResponse:
     c = prepare_client(request.user)
     if contest_id is None:
         teams_data = c.get(reverse('core:all_teams')).json()
-    else:
-        teams_data = c.get(reverse('core:teams', args=[contest_id])).json()
-        if 'message' in teams_data:
-            messages.error(request, 'Error: ' + teams_data['message'])
-            return redirect(reverse('front:contest'))
+        return render(request, 'teams.html', {
+            'teams': teams_data, 'title': 'Мои команды'})
+    teams_data = c.get(reverse('core:teams', args=[contest_id])).json()
+    if 'message' in teams_data:
+        messages.error(request, 'Error: ' + teams_data['message'])
+        return redirect(reverse('front:contest'))
     return render(request, 'teams.html', {
-        'teams': teams_data, 'title': 'Команды',
-        'registered': not c.get(reverse('core:permissions',
+        'teams': teams_data, 'title': 'Команды', 'contest': True,
+        'not_registered': c.get(reverse('core:permissions',
                                         args=[contest_id])).json()['register']})
 
 
