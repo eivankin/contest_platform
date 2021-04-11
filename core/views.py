@@ -94,7 +94,7 @@ def attempts(request: HttpRequest, contest_id: int = None) -> Response:
         return Response(serialized.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@api_view(['GET'])
+@api_view(['GET', 'POST'])
 def teams(request: HttpRequest, contest_id: int = None, team_id: int = None) -> Response:
     """
     Returns list of teams registered on contest if its id is given,
@@ -102,6 +102,21 @@ def teams(request: HttpRequest, contest_id: int = None, team_id: int = None) -> 
     If contest_id is given, supports GET parameter "order_by",
     possible values: "public_score" and "private_score".
     """
+    if request.method == 'POST':
+        if not request.user.is_authenticated:
+            return Response({'message': 'you must be authenticated to create teams'},
+                            status=status.HTTP_403_FORBIDDEN)
+        data = dict(request.data)
+        data['contest'] = contest_id
+        data['name'] = data['name'][0]
+        serialized = TeamSerializer(data=data)
+        if serialized.is_valid():
+            team = serialized.save()
+            team.users.add(request.user)
+            return Response({'message': 'Team successfully created'},
+                            status=status.HTTP_201_CREATED)
+        return Response(serialized.errors, status=status.HTTP_400_BAD_REQUEST)
+
     if team_id is not None:
         team = Team.objects.filter(pk=team_id).first()
         if team is None:
@@ -144,9 +159,9 @@ def get_permissions(request: HttpRequest, contest_id: int) -> Response:
     contest = Contest.objects.filter(pk=contest_id).first()
     if contest is None:
         return Response({'message': 'no such contest'}, status=status.HTTP_404_NOT_FOUND)
-    is_registered = request.user.is_authenticated and \
-        request.user.team_set.filter(contest_id=contest_id).first() is not None
-    if is_registered:
+    team = request.user.team_set.filter(contest_id=contest_id).first()
+    is_registered = request.user.is_authenticated and team is not None
+    if is_registered and Attempt.objects.filter(team=team).first() is not None:
         permissions['get_attempts'] = True
     now = timezone.now()
     if now < contest.ends_at:
@@ -166,12 +181,6 @@ def register_user(request: HttpRequest) -> Response:
             {'message': 'User successfully created, auth credentials will be sent on given email'},
             status=status.HTTP_201_CREATED)
     return Response(serialized.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-@login_required
-@api_view(['POST'])
-def register_team(request: HttpRequest, contest_id: int) -> Response:
-    pass
 
 
 @login_required

@@ -14,11 +14,12 @@ class ContestSerializer(serializers.HyperlinkedModelSerializer):
 
 class TeamSerializer(serializers.HyperlinkedModelSerializer):
     score = serializers.FloatField(required=False)
-    users = serializers.StringRelatedField(many=True)
+    users = serializers.StringRelatedField(many=True, required=False)
+    contest = serializers.PrimaryKeyRelatedField(queryset=Contest.objects.all())
 
     class Meta:
         model = Team
-        fields = ['id', 'name', 'contest_id', 'score', 'users']
+        fields = ['id', 'name', 'contest', 'score', 'users']
 
 
 class ActiveContestAttemptSerializer(serializers.HyperlinkedModelSerializer):

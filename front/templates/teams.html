@@ -3,6 +3,9 @@
     <h1>{{ title }}</h1>
     {% if contest %}
         <a class="btn btn-outline-success" href=".">Назад на страницу соревнования</a>
+        {% if not_registered %}
+            {% include 'team_form.html' %}
+        {% endif %}
     {% endif %}
     <table class="table table-striped table-hover">
         <thead>

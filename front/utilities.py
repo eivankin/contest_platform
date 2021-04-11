@@ -2,6 +2,7 @@ import re
 import os
 from functools import lru_cache
 from django.test import Client
+from django.contrib import messages
 from requests import get
 
 API_KEY = os.getenv('GEOCODER_API_KEY')
@@ -33,3 +34,15 @@ def prepare_client(user) -> Client:
     if user.is_authenticated:
         c.force_login(user)
     return c
+
+
+def repr_errors(errors: dict) -> str:
+    return 'Errors: ' + ', '.join([f'{key} - {value[0].lower()[:-1]}'
+                                  for key, value in errors.items()])
+
+
+def repr_result(response, request) -> None:
+    if response.status_code == 201:
+        messages.success(request, response.json()['message'])
+    else:
+        messages.error(request, repr_errors(response.json()))

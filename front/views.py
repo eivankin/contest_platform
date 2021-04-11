@@ -3,8 +3,8 @@ from django.http import HttpRequest, HttpResponse
 from django.urls import reverse
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from .utilities import process_contest_data, prepare_client
-from .forms import AttemptForm
+from .utilities import process_contest_data, prepare_client, repr_result
+from .forms import AttemptForm, TeamForm
 
 
 def contests(request: HttpRequest) -> HttpResponse:
@@ -52,7 +52,8 @@ def contest(request: HttpRequest, contest_id: int) -> HttpResponse:
     return render(request, 'contest.html', {
         'contest': contest_data, 'title': contest_data['name'],
         'teams': leaderboard, 'permissions': permissions,
-        'form': AttemptForm(), 'contest_id': contest_id
+        'form': AttemptForm(), 'contest_id': contest_id,
+        'team_form': TeamForm()
     })
 
 
@@ -62,6 +63,12 @@ def teams(request: HttpRequest, contest_id: int = None) -> HttpResponse:
         teams_data = c.get(reverse('core:all_teams')).json()
         return render(request, 'teams.html', {
             'teams': teams_data, 'title': 'Мои команды'})
+    if request.method == 'POST':
+        response = c.post(reverse('core:teams', args=[contest_id]),
+                          {'name': request.POST.get('name')})
+        repr_result(response, request)
+        return redirect(reverse('front:contest_teams', args=[contest_id]))
+
     teams_data = c.get(reverse('core:teams', args=[contest_id])).json()
     if 'message' in teams_data:
         messages.error(request, 'Error: ' + teams_data['message'])
@@ -69,7 +76,9 @@ def teams(request: HttpRequest, contest_id: int = None) -> HttpResponse:
     return render(request, 'teams.html', {
         'teams': teams_data, 'title': 'Команды', 'contest': True,
         'not_registered': c.get(reverse('core:permissions',
-                                        args=[contest_id])).json()['register']})
+                                        args=[contest_id])).json()['register'],
+        'team_form': TeamForm(), 'contest_id': contest_id
+    })
 
 
 @login_required
@@ -77,14 +86,10 @@ def attempts(request: HttpRequest, contest_id: int) -> HttpResponse:
     c = prepare_client(request.user)
     if request.method == 'POST':
         file = request.FILES.get('file')
-        print(request.FILES, request.POST)
         if file is not None:
             response = c.post(reverse('core:attempts', args=[contest_id]),
                               {'file': file})
-            if response.status_code == 201:
-                messages.success(request, response.json()['message'])
-            else:
-                messages.error(request, 'Error: ' + response.json()['message'])
+            repr_result(response, request)
     permissions = c.get(reverse('core:permissions', args=[contest_id])).json()
     if 'message' in permissions:
         messages.error(request, 'Error: ' + permissions['message'])
@@ -106,10 +111,7 @@ def register(request: HttpRequest, contest_id: int = None) -> HttpResponse:
     c = prepare_client(request.user)
     if contest_id is None:
         response = c.post(reverse('core:register_user'), request.POST)
-        if response.status_code == 201:
-            messages.success(request, response.json()['message'])
-        else:
-            messages.error(request, 'Error: ' + response.json()['message'])
+        repr_result(response, request)
         return redirect(reverse('front:contests'))
 
 

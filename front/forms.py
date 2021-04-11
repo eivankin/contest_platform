@@ -10,3 +10,7 @@ class AttemptForm(forms.Form):
 class RegisterForm(forms.Form):
     username = forms.CharField(label='Имя пользователя')
     email = forms.EmailField()
+
+
+class TeamForm(forms.Form):
+    name = forms.CharField(label='Название команды')

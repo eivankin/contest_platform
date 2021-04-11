@@ -10,7 +10,7 @@
             <a href="attempts" class="btn btn-success">Мои попытки</a>
         {% endif %}
         {% if permissions.register %}
-            <a href="register" class="btn btn-success">Создать команду</a>
+            {% include 'team_form.html' %}
         {% endif %}
         {% if permissions.submit %}
             {% include 'attempt_form.html' %}
