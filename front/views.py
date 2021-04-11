@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from django.http import HttpRequest, HttpResponse
 from django.urls import reverse
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from .utilities import process_contest_data, prepare_client
 from .forms import AttemptForm
 
@@ -66,10 +67,21 @@ def contest(request: HttpRequest, contest_id: int) -> HttpResponse:
 
 
 def teams(request: HttpRequest, contest_id: int = None) -> HttpResponse:
+    c = prepare_client(request.user)
     if contest_id is None:
-        return render(request, )
+        teams_data = c.get(reverse('core:all_teams')).json()
+    else:
+        teams_data = c.get(reverse('core:teams', args=[contest_id])).json()
+        if 'message' in teams_data:
+            messages.error(request, 'Error: ' + teams_data['message'])
+            return redirect(reverse('front:contest'))
+    return render(request, 'teams.html', {
+        'teams': teams_data, 'title': 'Команды',
+        'registered': not c.get(reverse('core:permissions',
+                                        args=[contest_id])).json()['register']})
 
 
+@login_required
 def attempts(request: HttpRequest, contest_id: int) -> HttpResponse:
     c = prepare_client(request.user)
     permissions = c.get(reverse('core:permissions', args=[contest_id])).json()
