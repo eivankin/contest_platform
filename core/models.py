@@ -11,12 +11,13 @@ class Contest(models.Model):
     description = models.TextField()
     starts_at = models.DateTimeField()
     ends_at = models.DateTimeField()
-    region_of_interest = models.FileField(upload_to='files/contests/%Y/%m/%d/', null=True)
+    region_of_interest = models.FileField(upload_to='files/contests/%Y/%m/%d/',
+                                          null=True, blank=True)
     public_reference_file = models.FileField(blank=True, null=True,
                                              upload_to='files/contests/%Y/%m/%d/')
     private_reference_file = models.FileField(blank=True, null=True,
                                               upload_to='files/contests/%Y/%m/%d/')
-    column_to_compare = models.CharField(max_length=50, null=True)
+    column_to_compare = models.CharField(max_length=50, null=True, blank=True)
 
     def __str__(self):
         return self.name
