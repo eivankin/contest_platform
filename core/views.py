@@ -100,11 +100,11 @@ def teams(request: HttpRequest, contest_id: int = None, team_id: int = None) -> 
     If contest_id is given, supports GET parameter "order_by",
     possible values: "public_score" and "private_score".
     """
-    if team_id is not None:
-        team = Team.objects.filter(pk=team_id).first()
-        if team is None:
-            return Response({'message': 'no such team'}, status=status.HTTP_404_NOT_FOUND)
-        return Response(TeamSerializer(team).data)
+    # if team_id is not None:
+    #     team = Team.objects.filter(pk=team_id).first()
+    #     if team is None:
+    #         return Response({'message': 'no such team'}, status=status.HTTP_404_NOT_FOUND)
+    #     return Response(TeamSerializer(team).data)
     if contest_id is None:
         if request.user.is_authenticated:
             teams_query = request.user.team_set.all()
