@@ -28,15 +28,20 @@ def future_contests() -> QuerySet:
 
 
 @api_view(['GET'])
-def contests(request: HttpRequest, contests_type: str = 'all') -> Response:
+def contests(request: HttpRequest, contests_type: str = 'all', contest_id: int = None) -> Response:
     """Main contest view, returns json dictionary with requested contests or 404."""
     contests_types = {'all': lambda: Contest.objects.all(),
                       'active': active_contests,
                       'archive': archive_contests,
                       'future': future_contests,
                       'my': active_contests}
+    if contest_id is not None:
+        contest = Contest.objects.filter(pk=contest_id).first()
+        if contest is None:
+            return Response({'message': 'no such contest'}, status=status.HTTP_404_NOT_FOUND)
+        return Response(ContestSerializer(contest).data)
     if contests_type not in contests_types:
-        return Response(status=status.HTTP_404_NOT_FOUND)
+        return Response({'message': 'no such contest type'}, status=status.HTTP_404_NOT_FOUND)
     contests_query = contests_types[contests_type]()
     if contests_type == 'my' and request.user.is_authenticated:
         contests_query = contests_query.filter(team__in=request.user.team_set.all())
@@ -124,3 +129,21 @@ def teams(request: HttpRequest, contest_id: int = None) -> Response:
 
     serialized = TeamSerializer(teams_query, many=True)
     return Response(serialized.data)
+
+
+@api_view(['GET'])
+def get_permissions(request: HttpRequest, contest_id: int) -> Response:
+    permissions = {'register': False, 'submit': False, 'get_attempts': False}
+    contest = Contest.objects.filter(pk=contest_id).first()
+    if contest is None:
+        return Response({'message': 'no such contest'}, status=status.HTTP_404_NOT_FOUND)
+    is_registered = request.user.is_authenticated and \
+        request.user.team_set.filter(contest_id=contest_id).first() is not None
+    if is_registered:
+        permissions['get_attempts'] = True
+    if contest.starts_at < timezone.now() < contest.ends_at:
+        if is_registered:
+            permissions['submit'] = True
+        else:
+            permissions['register'] = True
+    return Response(permissions)

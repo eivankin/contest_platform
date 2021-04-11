@@ -3,6 +3,9 @@ from rest_framework import serializers
 
 
 class ContestSerializer(serializers.HyperlinkedModelSerializer):
+    starts_at = serializers.DateTimeField(format="%d.%m.%Y %H:%M")
+    ends_at = serializers.DateTimeField(format="%d.%m.%Y %H:%M")
+
     class Meta:
         model = Contest
         fields = ['id', 'name', 'description', 'starts_at', 'ends_at']
