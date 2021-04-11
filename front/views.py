@@ -65,8 +65,9 @@ def contest(request: HttpRequest, contest_id: int) -> HttpResponse:
     })
 
 
-def teams(request: HttpRequest) -> HttpResponse:
-    pass
+def teams(request: HttpRequest, contest_id: int = None) -> HttpResponse:
+    if contest_id is None:
+        return render(request, )
 
 
 def attempts(request: HttpRequest, contest_id: int) -> HttpResponse:

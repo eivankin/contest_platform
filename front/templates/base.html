@@ -33,13 +33,39 @@
                 </a>
             {% else %}
                 <div class="navbar-brand">
-                    <a class="btn btn-light" href="{% url 'rest_framework:login' %}">Login</a>
+                    <a class="btn btn-light" href="{% url 'rest_framework:login' %}">Вход</a>
+                    <button type="button" class="btn btn-light" data-bs-toggle="modal"
+                            data-bs-target="#registerModal">
+                        Регистрация
+                    </button>
                 </div>
             {% endif %}
         </div>
     </div>
 </nav>
 <main class="container-fluid" style="margin-top: 5%">
+    <form action="/register" method="post">
+        <div class="modal fade" id="registerModal" tabindex="-1"
+             aria-labelledby="registerModalLabel"
+             aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="registerModalLabel">Регистрация</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                aria-label="Закрыть"></button>
+                    </div>
+                    <div class="modal-body">здесь могла быть форма регистрации</div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            Закрыть
+                        </button>
+                        <button type="submit" class="btn btn-success">Отправить</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
     {% bootstrap_messages %}
     {% block content %}{% endblock %}
 </main>

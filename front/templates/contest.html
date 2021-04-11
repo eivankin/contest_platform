@@ -5,11 +5,12 @@
         Время проведения: {{ contest.starts_at }} - {{ contest.ends_at }}
     </h5>
     <p class="text-center">
+        <a href="teams" class="btn btn-success">Зарегистрированные команды</a>
         {% if permissions.get_attempts %}
             <a href="attempts" class="btn btn-success">Мои попытки</a>
         {% endif %}
         {% if permissions.register %}
-            <a href="register" class="btn btn-success">Зарегистрироваться</a>
+            <a href="register" class="btn btn-success">Создать команду</a>
         {% endif %}
         {% if permissions.submit %}
             {% include 'attempt_form.html' %}

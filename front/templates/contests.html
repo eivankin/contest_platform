@@ -23,8 +23,9 @@
                 <div class="card-body">
                     <h6 class="card-subtitle mb-2 text-muted">
                         Время проведения: {{ contest.starts_at }} - {{ contest.ends_at }}
-                    </h6>                    <p class="card-text">{{ contest.description|safe }}</p>
-                    <a href="#" class="btn btn-success">Принять участие</a>
+                    </h6>
+                    <p class="card-text">{{ contest.description|safe }}</p>
+                    <a href="{% url 'front:contest' contest.id %}" class="btn btn-success">Принять участие</a>
                 </div>
             </div>
         {% endfor %}
@@ -36,9 +37,10 @@
                 <div class="card-header bg-success text-white">{{ contest.name }}</div>
                     <h6 class="card-subtitle mb-2 text-muted">
                         Время проведения: {{ contest.starts_at }} - {{ contest.ends_at }}
-                    </h6>                <div class="card-body">
+                    </h6>
+                <div class="card-body">
                     <p class="card-text">{{ contest.description|safe }}</p>
-                    <a href="#" class="btn btn-success">Зарегистрироваться</a>
+                    <a href="{% url 'front:contest' contest.id %}" class="btn btn-success">Зарегистрироваться</a>
                 </div>
             </div>
         {% endfor %}
@@ -50,9 +52,10 @@
                 <div class="card-header bg-success text-white">{{ contest.name }}</div>
                     <h6 class="card-subtitle mb-2 text-muted">
                         Время проведения: {{ contest.starts_at }} - {{ contest.ends_at }}
-                    </h6>                <div class="card-body">
+                    </h6>
+                <div class="card-body">
                     <p class="card-text">{{ contest.description|safe }}</p>
-                    <a href="#" class="btn btn-success">Посмотреть результаты</a>
+                    <a href="{% url 'front:contest' contest.id %}" class="btn btn-success">Посмотреть результаты</a>
                 </div>
             </div>
         {% endfor %}
