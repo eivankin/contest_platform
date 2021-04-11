@@ -146,8 +146,9 @@ def get_permissions(request: HttpRequest, contest_id: int) -> Response:
         request.user.team_set.filter(contest_id=contest_id).first() is not None
     if is_registered:
         permissions['get_attempts'] = True
-    if contest.starts_at < timezone.now() < contest.ends_at:
-        if is_registered:
+    now = timezone.now()
+    if now < contest.ends_at:
+        if is_registered and contest.starts_at < now:
             permissions['submit'] = True
         else:
             permissions['register'] = True
