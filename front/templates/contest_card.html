@@ -1,0 +1,10 @@
+<div class="card">
+    <div class="card-header bg-success text-white">{{ contest.name }}</div>
+    <div class="card-body">
+        <h6 class="card-subtitle mb-2 text-muted">
+            Время проведения: {{ contest.starts_at }} - {{ contest.ends_at }}
+        </h6>
+        <p class="card-text">{{ contest.description|safe }}</p>
+        <a href="{% url 'front:contest' contest.id %}" class="btn btn-success">{{ action }}</a>
+    </div>
+</div>
