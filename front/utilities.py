@@ -9,7 +9,8 @@ API_KEY = os.getenv('GEOCODER_API_KEY')
 
 
 def replace_geocode_tag(match: re.Match) -> str:
-    return f'<br><img src="https://static-maps.yandex.ru/1.x/{get_params(match.group(1))}"><br>'
+    return f'<br><img style="max-width: 100%" ' \
+           f'src="https://static-maps.yandex.ru/1.x/{get_params(match.group(1))}"><br>'
 
 
 @lru_cache(maxsize=2048)
