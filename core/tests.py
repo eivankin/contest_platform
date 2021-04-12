@@ -98,7 +98,7 @@ class AttemptViewsTests(TestCase):
         files = {'file': open(BASE_DIR / 'checker/tests_data/submit.zip', 'rb')}
         response = self.client.post(reverse('core:attempts', args=[self.my_contest.pk]), files)
         self.assertEqual(response.status_code, 201)
-        self.assertEqual(response.json(), {'message': 'saved successfully'})
+        self.assertEqual(response.json(), {'message': 'Attempt created successfully'})
         attempts = self.client.get(reverse('core:attempts', args=[self.my_contest.pk])).json()
         self.assertEqual(len(attempts), 1)
         self.assertEqual(attempts[0]['status'], 'Accepted')
