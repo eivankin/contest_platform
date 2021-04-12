@@ -21,7 +21,8 @@ def get_params(place: str):
     ).json()['response']['GeoObjectCollection']['featureMember'][0]['GeoObject']
     bounds = obj['boundedBy']['Envelope']
     (x0, y0), (x1, y1) = map(lambda x: map(float, x.split()), bounds.values())
-    return f'?l=sat&ll={obj["Point"]["pos"].replace(" ", ",")}&spn={abs(x1 - x0)},{abs(y1 - y0)}'
+    return f'?l=sat,skl&ll={obj["Point"]["pos"].replace(" ", ",")}' \
+           f'&spn={abs(x1 - x0)},{abs(y1 - y0)}'
 
 
 def process_contest_data(contest_list: list) -> None:
