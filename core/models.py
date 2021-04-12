@@ -55,6 +55,7 @@ def send_password_on_save(instance: User, *args, **kwargs):
 
 
 User.save = send_password_on_save
+User._meta.get_field('email')._unique = True
 
 
 @receiver(post_save, sender=Attempt)
