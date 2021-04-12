@@ -42,7 +42,7 @@ def contest(request: HttpRequest, contest_id: int) -> HttpResponse:
     c = prepare_client(request.user)
     contest_data = c.get(reverse('core:contest', args=[contest_id])).json()
     if 'message' in contest_data:
-        messages.error(request, 'Error: ' + contest_data['message'])
+        messages.error(request, 'Ошибка: ' + contest_data['message'])
         return redirect(reverse('front:contests'))
     process_contest_data([contest_data])
     permissions = c.get(reverse('core:permissions', args=[contest_id])).json()
@@ -72,7 +72,7 @@ def teams(request: HttpRequest, contest_id: int = None) -> HttpResponse:
 
     teams_data = c.get(reverse('core:teams', args=[contest_id])).json()
     if 'message' in teams_data:
-        messages.error(request, 'Error: ' + teams_data['message'])
+        messages.error(request, 'Ошибка: ' + teams_data['message'])
         return redirect(reverse('front:contest'))
     return render(request, 'teams.html', {
         'teams': teams_data, 'title': 'Команды', 'contest': True,
@@ -93,7 +93,7 @@ def attempts(request: HttpRequest, contest_id: int) -> HttpResponse:
             repr_result(response, request)
     permissions = c.get(reverse('core:permissions', args=[contest_id])).json()
     if 'message' in permissions:
-        messages.error(request, 'Error: ' + permissions['message'])
+        messages.error(request, 'Ошибка: ' + permissions['message'])
         return redirect(reverse('front:contests'))
     if not permissions['get_attempts']:
         messages.error(request, 'You can\'t view attempts of this contest')

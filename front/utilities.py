@@ -37,7 +37,7 @@ def prepare_client(user) -> Client:
 
 
 def repr_errors(errors: dict) -> str:
-    return 'Errors: ' + ', '.join([f'{key} - {value[0].lower()[:-1]}'
+    return 'Ошибки: ' + ', '.join([f'{key} - {value[0].lower()[:-1]}'
                                   for key, value in errors.items()])
 
 

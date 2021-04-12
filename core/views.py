@@ -31,7 +31,11 @@ def future_contests() -> QuerySet:
 
 @api_view(['GET'])
 def contests(request: HttpRequest, contests_type: str = 'all', contest_id: int = None) -> Response:
-    """Main contest view, returns json dictionary with requested contests or 404."""
+    """
+    Main contest view, returns json dictionary with requested contests or 404.
+    Contests may be filtered with contests_type parameter based on their status:
+    active, future, archive, user's (called "my").
+    """
     contests_types = {'all': lambda: Contest.objects.all(),
                       'active': active_contests,
                       'archive': archive_contests,
@@ -40,10 +44,10 @@ def contests(request: HttpRequest, contests_type: str = 'all', contest_id: int =
     if contest_id is not None:
         contest = Contest.objects.filter(pk=contest_id).first()
         if contest is None:
-            return Response({'message': 'no such contest'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'message': 'нет такого соревнования'}, status=status.HTTP_404_NOT_FOUND)
         return Response(ContestSerializer(contest).data)
     if contests_type not in contests_types:
-        return Response({'message': 'no such contest type'}, status=status.HTTP_404_NOT_FOUND)
+        return Response({'message': 'нет такого типа соревнований'}, status=status.HTTP_404_NOT_FOUND)
     contests_query = contests_types[contests_type]()
     if contests_type == 'my' and request.user.is_authenticated:
         contests_query = contests_query.filter(team__in=request.user.team_set.all())
@@ -56,7 +60,7 @@ def contests(request: HttpRequest, contests_type: str = 'all', contest_id: int =
 def attempts(request: HttpRequest, contest_id: int = None) -> Response:
     """
     Returns list of attempts if request method is GET,
-    or creates new attempt if request method is post.
+    or creates new attempt if request method is POST.
     """
     if request.method == 'GET':
         serializer = ActiveContestAttemptSerializer
@@ -73,15 +77,15 @@ def attempts(request: HttpRequest, contest_id: int = None) -> Response:
 
     if request.method == 'POST':
         if contest_id is None:
-            return Response({'message': 'contest_id is missing'},
+            return Response({'message': 'contest_id пропущен'},
                             status=status.HTTP_400_BAD_REQUEST)
         try:
             contest = Contest.objects.get(pk=contest_id)
         except Exception:
-            return Response({'message': 'no such contest'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'message': 'нет такого соревнования'}, status=status.HTTP_404_NOT_FOUND)
 
         if contest.starts_at > timezone.now() or contest.ends_at < timezone.now():
-            return Response({'message': 'you can\'t create attempt in inactive contest'},
+            return Response({'message': 'нельзя отправлять решения на неактивные соревнования'},
                             status=status.HTTP_403_FORBIDDEN)
 
         data = {'team_id': request.user.team_set.get(contest=contest).pk,
@@ -90,7 +94,7 @@ def attempts(request: HttpRequest, contest_id: int = None) -> Response:
         if serialized.is_valid():
             instance = serialized.save()
             instance.save()
-            return Response({'message': 'Attempt created successfully'},
+            return Response({'message': 'Решение успешно отправлено'},
                             status=status.HTTP_201_CREATED)
         return Response(serialized.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -99,13 +103,16 @@ def attempts(request: HttpRequest, contest_id: int = None) -> Response:
 def teams(request: HttpRequest, contest_id: int = None, team_id: int = None) -> Response:
     """
     Returns list of teams registered on contest if its id is given,
-    else returns user teams or all teams depends on if user is authenticated.
+    else will return user teams or all teams depends on if user is authenticated.
+    If team_id is given, will return one team.
     If contest_id is given, supports GET parameter "order_by",
     possible values: "public_score" and "private_score".
+    If request method is POST, will create new team.
+    If request method is PATCH, will join current user to give team.
     """
     if request.method == 'POST':
         if not request.user.is_authenticated:
-            return Response({'message': 'you must be authenticated to create teams'},
+            return Response({'message': 'нужно авторизоваться, чтобы создавать команды'},
                             status=status.HTTP_403_FORBIDDEN)
         data = dict(request.data)
         data['contest'] = contest_id
@@ -114,31 +121,31 @@ def teams(request: HttpRequest, contest_id: int = None, team_id: int = None) -> 
         if serialized.is_valid():
             team = serialized.save()
             team.users.add(request.user)
-            return Response({'message': 'Team successfully created'},
+            return Response({'message': 'Команда успешно создана'},
                             status=status.HTTP_201_CREATED)
         return Response(serialized.errors, status=status.HTTP_400_BAD_REQUEST)
 
     if request.method == 'PATCH':
         if not request.user.is_authenticated:
-            return Response({'message': 'you must be authenticated to join teams'},
+            return Response({'message': 'нужно авторизоваться, чтобы присоединяться к командам'},
                             status=status.HTTP_403_FORBIDDEN)
         team = Team.objects.filter(pk=team_id).first()
         if team is None:
-            return Response({'message': 'no such team'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'message': 'нет такой команды'}, status=status.HTTP_404_NOT_FOUND)
         if len(team.users.all()) == MAX_TEAM_MEMBERS:
-            return Response({'message': 'team has maximum number of members'},
+            return Response({'message': 'в команде максимальное число участников'},
                             status=status.HTTP_403_FORBIDDEN)
         if request.user.team_set.filter(contest_id=team.contest_id).first() is not None:
-            return Response({'message': 'you have already registered on this contest'},
+            return Response({'message': 'пользователь уже зарегистрирован на это соревнование'},
                             status=status.HTTP_403_FORBIDDEN)
         team.users.add(request.user)
         team.save()
-        return Response({'message': 'Successfully joined the team'})
+        return Response({'message': 'Пользователь успешно присоединился к команде'})
 
     if team_id is not None:
         team = Team.objects.filter(pk=team_id).first()
         if team is None:
-            return Response({'message': 'no such team'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'message': 'команда не найдена'}, status=status.HTTP_404_NOT_FOUND)
         return Response(TeamSerializer(team).data)
     if contest_id is None:
         if request.user.is_authenticated:
@@ -149,7 +156,7 @@ def teams(request: HttpRequest, contest_id: int = None, team_id: int = None) -> 
     else:
         contest = Contest.objects.filter(pk=contest_id).first()
         if contest is None:
-            return Response({'message': 'no such contest'},
+            return Response({'message': 'нет такого соревнования'},
                             status=status.HTTP_404_NOT_FOUND)
 
         teams_query = Team.objects.filter(contest=contest)
@@ -157,7 +164,7 @@ def teams(request: HttpRequest, contest_id: int = None, team_id: int = None) -> 
     if order == 'private_score':
         if contest_id is None or not contest.ends_at < timezone.now():
             return Response(
-                {'message': 'private leaderboard is closed while contest isn\'t ended'},
+                {'message': 'финальный счёт скрыт, пока соревнование не закончится'},
                 status=status.HTTP_403_FORBIDDEN
             )
         score = models.Max('attempt__private_score') \
@@ -175,11 +182,15 @@ def teams(request: HttpRequest, contest_id: int = None, team_id: int = None) -> 
 
 @api_view(['GET'])
 def get_permissions(request: HttpRequest, contest_id: int) -> Response:
+    """
+    Returns dict with keys "register", "submit", "get_attempts", "view_private"
+    that describes user permissions in given contest.
+    """
     permissions = {'register': False, 'submit': False,
                    'get_attempts': False, 'view_private': False}
     contest = Contest.objects.filter(pk=contest_id).first()
     if contest is None:
-        return Response({'message': 'no such contest'}, status=status.HTTP_404_NOT_FOUND)
+        return Response({'message': 'нет такого соревнования'}, status=status.HTTP_404_NOT_FOUND)
     team = request.user.team_set.filter(contest_id=contest_id).first()
     is_registered = request.user.is_authenticated and team is not None
     if is_registered and Attempt.objects.filter(team=team).first() is not None:
@@ -201,6 +212,7 @@ def register_user(request: HttpRequest) -> Response:
     if serialized.is_valid():
         serialized.save()
         return Response(
-            {'message': 'User successfully created, auth credentials will be sent on given email'},
+            {'message': 'Пользователь успешно создан, данные для входа отправлены '
+                        'на указанный email'},
             status=status.HTTP_201_CREATED)
     return Response(serialized.errors, status=status.HTTP_400_BAD_REQUEST)

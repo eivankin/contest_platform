@@ -24,3 +24,8 @@ git clone https://github.com/eivankin/contest_platform
 cd contest_platform
 pip install -r requirements.txt 
 ```
+
+## Скриншоты
+![Страница соревнования](https://imgur.com/KgiEyAb.png)
+![Список соревнований](https://imgur.com/Y0YejWD.png)
+![Список команд пользователя](https://imgur.com/6K5PoMP.png)
