@@ -1,4 +1,5 @@
 import os
+import django_heroku
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -119,3 +120,6 @@ EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 EMAIL_USE_TLS = True
 
 MAX_TEAM_MEMBERS = 4
+
+# Activate Django-Heroku.
+django_heroku.settings(locals())
