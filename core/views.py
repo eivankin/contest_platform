@@ -44,10 +44,12 @@ def contests(request: HttpRequest, contests_type: str = 'all', contest_id: int =
     if contest_id is not None:
         contest = Contest.objects.filter(pk=contest_id).first()
         if contest is None:
-            return Response({'message': 'нет такого соревнования'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'message': 'нет такого соревнования'},
+                            status=status.HTTP_404_NOT_FOUND)
         return Response(ContestSerializer(contest).data)
     if contests_type not in contests_types:
-        return Response({'message': 'нет такого типа соревнований'}, status=status.HTTP_404_NOT_FOUND)
+        return Response({'message': 'нет такого типа соревнований'},
+                        status=status.HTTP_404_NOT_FOUND)
     contests_query = contests_types[contests_type]()
     if contests_type == 'my' and request.user.is_authenticated:
         contests_query = contests_query.filter(team__in=request.user.team_set.all())

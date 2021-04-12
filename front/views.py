@@ -38,6 +38,7 @@ def contests(request: HttpRequest) -> HttpResponse:
     )
 
 
+@login_required
 def contest(request: HttpRequest, contest_id: int) -> HttpResponse:
     c = prepare_client(request.user)
     contest_data = c.get(reverse('core:contest', args=[contest_id])).json()
