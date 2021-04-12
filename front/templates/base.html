@@ -1,0 +1,76 @@
+{% load bootstrap5 %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta charset="UTF-8">
+    {% bootstrap_css %}
+    {% bootstrap_javascript %}
+    <title>{{ title }} | ACP </title>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-success fixed-top">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="/">ACP</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                    <a class="nav-link active" aria-current="page" href="{% url 'front:teams' %}">Команды</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" aria-current="page"
+                       href="{% url 'front:contests' %}">Соревнования</a>
+                </li>
+            </ul>
+            {% if request.user.is_authenticated %}
+                <a class="navbar-brand" href="{% url 'rest_framework:logout' %}">
+                    {{ request.user.username }}
+                </a>
+            {% else %}
+                <div class="navbar-brand">
+                    <a class="btn btn-light" href="{% url 'rest_framework:login' %}">Вход</a>
+                    <button type="button" class="btn btn-light" data-bs-toggle="modal"
+                            data-bs-target="#registerModal">
+                        Регистрация
+                    </button>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</nav>
+<main class="container-fluid" style="margin-top: 5%">
+    <form action="{% url 'front:register_user' %}" method="post">
+        <div class="modal fade" id="registerModal" tabindex="-1"
+             aria-labelledby="registerModalLabel"
+             aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="registerModalLabel">Регистрация</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                aria-label="Закрыть"></button>
+                    </div>
+                    <div class="modal-body">
+                        {% csrf_token %}
+                        {% bootstrap_form request.login_form %}
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            Закрыть
+                        </button>
+                        <button type="submit" class="btn btn-success">Отправить</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+    {% bootstrap_messages %}
+    {% block content %}{% endblock %}
+</main>
+</body>
+</html>

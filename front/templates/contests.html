@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block content %}
+    {% if my_contests %}
+        <h1>Мои соревнования</h1>
+        {% for contest in my_contests %}
+            {% with action='Перейти к соревнованию' %}
+            {% include 'contest_card.html' %}
+            {% endwith %}
+        {% endfor %}
+    {% endif %}
+    {% if active_contests %}
+        <h1>Активные соревнования</h1>
+        {% for contest in active_contests %}
+            {% with action='Принять участие' %}
+            {% include 'contest_card.html' %}
+            {% endwith %}
+        {% endfor %}
+    {% endif %}
+    {% if future_contests %}
+        <h1>Планируемые соревнования</h1>
+        {% for contest in future_contests %}
+            {% with action='Зарегистрироваться' %}
+            {% include 'contest_card.html' %}
+            {% endwith %}
+        {% endfor %}
+    {% endif %}
+    {% if archive_contests %}
+        <h1>Прошедшие соревнования</h1>
+        {% for contest in archive_contests %}
+            {% with action='Просмотреть результаты' %}
+            {% include 'contest_card.html' %}
+            {% endwith %}
+        {% endfor %}
+    {% endif %}
+{% endblock %}

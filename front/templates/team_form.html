@@ -1,0 +1,28 @@
+{% load bootstrap5 %}
+<button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#teamModal">
+    Создать команду
+</button>
+<form action="{% url 'front:contest_teams' contest_id %}" method="post">
+    <div class="modal fade" id="teamModal" tabindex="-1" aria-labelledby="teamModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="teamModalLabel">Новая команда</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                            aria-label="Закрыть"></button>
+                </div>
+                <div class="modal-body">
+                    {% bootstrap_form_errors team_form %}
+                    {% csrf_token %}
+                    {% bootstrap_form team_form %}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть
+                    </button>
+                    <button type="submit" class="btn btn-success">Отправить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>

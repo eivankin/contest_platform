@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% block content %}
+    <h1 class="text-center">{{ contest.name }}</h1>
+    <h5 class="text-muted text-center">
+        Время проведения: {{ contest.starts_at }} - {{ contest.ends_at }}
+    </h5>
+    <p class="text-center">
+        <a href="teams" class="btn btn-success">Зарегистрированные команды</a>
+        {% if permissions.get_attempts %}
+            <a href="attempts" class="btn btn-success">Мои попытки</a>
+        {% endif %}
+        {% if permissions.register %}
+            {% include 'team_form.html' %}
+        {% endif %}
+        {% if permissions.submit %}
+            {% include 'attempt_form.html' %}
+        {% endif %}
+    </p>
+    <p class="text-center">{{ contest.description|safe }}</p>
+    <h2 class="text-center">Участники</h2>
+    <table class="table table-striped table-hover">
+        <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Название команды</th>
+                <th scope="col">
+                    {% if permissions.view_private%}
+                        Финальный счёт
+                    {% else %}
+                        Счёт
+                    {% endif %}
+                </th>
+            </tr>
+        </thead>
+        {% for team in teams %}
+            <tr>
+                <th scope="row">{{ forloop.counter }}</th>
+                <td>{{ team.name }}</td>
+                <td>{{ team.score|default:"Пока неизвестен" }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+{% endblock %}
