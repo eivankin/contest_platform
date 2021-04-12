@@ -9,7 +9,7 @@ API_KEY = os.getenv('GEOCODER_API_KEY')
 
 
 def replace_geocode_tag(match: re.Match) -> str:
-    return f'<br><img src="https://static-maps.yandex.ru/1.x/{get_params(match.group(1))}">'
+    return f'<br><img src="https://static-maps.yandex.ru/1.x/{get_params(match.group(1))}"><br>'
 
 
 @lru_cache(maxsize=2048)
@@ -26,7 +26,7 @@ def get_params(place: str):
 def process_contest_data(contest_list: list) -> None:
     for contest in contest_list:
         contest['description'] = re.sub(
-            r'@geocode\((.*)\)', replace_geocode_tag, contest['description'])
+            r'@geocode\((\"[\w\s]+\")\)', replace_geocode_tag, contest['description'])
 
 
 def prepare_client(user) -> Client:
