@@ -23,14 +23,20 @@
             <tr>
                 <th scope="col">#</th>
                 <th scope="col">Название команды</th>
-                <th scope="col">Счёт</th>
+                <th scope="col">
+                    {% if permissions.view_private%}
+                        Финальный счёт
+                    {% else %}
+                        Счёт
+                    {% endif %}
+                </th>
             </tr>
         </thead>
         {% for team in teams %}
             <tr>
                 <th scope="row">{{ forloop.counter }}</th>
                 <td>{{ team.name }}</td>
-                <td>{{ team.score|default:"Нет попыток" }}</td>
+                <td>{{ team.score|default:"Пока неизвестен" }}</td>
             </tr>
         {% endfor %}
     </table>

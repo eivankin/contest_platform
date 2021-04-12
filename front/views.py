@@ -47,7 +47,8 @@ def contest(request: HttpRequest, contest_id: int) -> HttpResponse:
     process_contest_data([contest_data])
     permissions = c.get(reverse('core:permissions', args=[contest_id])).json()
     leaderboard = c.get(
-        reverse('core:teams', args=[contest_id]), {'order_by': 'public_score'}
+        reverse('core:teams', args=[contest_id]), {
+            'order_by': 'private_score' if permissions['view_private'] else 'public_score'}
     ).json()
     return render(request, 'contest.html', {
         'contest': contest_data, 'title': contest_data['name'],

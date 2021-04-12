@@ -160,7 +160,9 @@ def teams(request: HttpRequest, contest_id: int = None, team_id: int = None) -> 
                 {'message': 'private leaderboard is closed while contest isn\'t ended'},
                 status=status.HTTP_403_FORBIDDEN
             )
-        score = models.Max('attempt__private_score')
+        score = models.Max('attempt__private_score') \
+            if contest.private_reference_file is not None \
+            else models.Max('attempt__public_score')
     else:
         score = models.Max('attempt__public_score')
     teams_query = teams_query.annotate(score=score)
@@ -173,7 +175,8 @@ def teams(request: HttpRequest, contest_id: int = None, team_id: int = None) -> 
 
 @api_view(['GET'])
 def get_permissions(request: HttpRequest, contest_id: int) -> Response:
-    permissions = {'register': False, 'submit': False, 'get_attempts': False}
+    permissions = {'register': False, 'submit': False,
+                   'get_attempts': False, 'view_private': False}
     contest = Contest.objects.filter(pk=contest_id).first()
     if contest is None:
         return Response({'message': 'no such contest'}, status=status.HTTP_404_NOT_FOUND)
@@ -187,6 +190,8 @@ def get_permissions(request: HttpRequest, contest_id: int) -> Response:
             permissions['submit'] = True
         else:
             permissions['register'] = True
+    if now > contest.ends_at:
+        permissions['view_private'] = True
     return Response(permissions)
 
 
